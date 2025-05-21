@@ -1,0 +1,76 @@
+services:
+  # Database
+  postgres:
+    type: pserv
+    name: postgres
+    env: docker
+    dockerfilePath: ./Dockerfile.postgres
+    disk:
+      name: postgres-data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
+    envVars:
+      - key: POSTGRES_USER
+        value: root
+      - key: POSTGRES_PASSWORD
+        sync: false
+      - key: POSTGRES_DB
+        value: n8n
+
+  # n8n workflow automation
+  n8n:
+    type: web
+    name: n8n
+    env: docker
+    dockerfilePath: ./Dockerfile.n8n
+    disk:
+      name: n8n-data
+      mountPath: /home/node/.n8n
+      sizeGB: 10
+    envVars:
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_HOST
+        fromService:
+          name: postgres
+          type: pserv
+          property: host
+      - key: DB_POSTGRESDB_USER
+        value: root
+      - key: DB_POSTGRESDB_PASSWORD
+        sync: false
+      - key: N8N_ENCRYPTION_KEY
+        sync: false
+      - key: N8N_USER_MANAGEMENT_JWT_SECRET
+        sync: false
+      - key: OLLAMA_HOST
+        fromService:
+          name: ollama
+          type: pserv
+          property: host
+      - key: N8N_DIAGNOSTICS_ENABLED
+        value: "false"
+      - key: N8N_PERSONALIZATION_ENABLED
+        value: "false"
+
+  # Qdrant vector database
+  qdrant:
+    type: pserv
+    name: qdrant
+    env: docker
+    dockerfilePath: ./Dockerfile.qdrant
+    disk:
+      name: qdrant-data
+      mountPath: /qdrant/storage
+      sizeGB: 10
+
+  # Ollama (CPU version only)
+  ollama:
+    type: pserv
+    name: ollama
+    env: docker
+    dockerfilePath: ./Dockerfile.ollama
+    disk:
+      name: ollama-data
+      mountPath: /root/.ollama
+      sizeGB: 20
