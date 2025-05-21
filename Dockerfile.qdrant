@@ -1,0 +1,10 @@
+FROM ollama/ollama:latest
+
+# Pre-download the llama3.2 model
+RUN echo '#!/bin/sh\n\
+ollama pull llama3.2 &\n\
+exec "$@"' > /docker-entrypoint-pull-model.sh && \
+chmod +x /docker-entrypoint-pull-model.sh
+
+ENTRYPOINT ["/docker-entrypoint-pull-model.sh"]
+CMD ["ollama", "serve"]
