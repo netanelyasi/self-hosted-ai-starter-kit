@@ -1,0 +1,14 @@
+FROM n8nio/n8n:latest
+
+COPY ./n8n/demo-data /demo-data
+COPY ./shared /data/shared
+
+# Import workflows and credentials on startup
+RUN echo '#!/bin/sh\n\
+n8n import:credentials --separate --input=/demo-data/credentials\n\
+n8n import:workflow --separate --input=/demo-data/workflows\n\
+exec "$@"' > /docker-entrypoint-n8n-import.sh && \
+chmod +x /docker-entrypoint-n8n-import.sh
+
+ENTRYPOINT ["/docker-entrypoint-n8n-import.sh"]
+CMD ["n8n", "start"]
